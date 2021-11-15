@@ -7,8 +7,8 @@ class Db
     private function __construct()
     {
         try {
-            $this->_db = new PDO('mysql:host=localhost;dbname=bdbn;charset=utf8', 'root', '');
-            $this->_db->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);
+		$this -> _db = parse_url(getenv("DATABASE_URL"));
+		$this -> _db["path"] = ltrim(_db["path"], "/");
         } 
 		catch (PDOException $e) {
 		    die('Erreur de connexion à la base de données : '.$e->getMessage());
@@ -34,7 +34,7 @@ class Db
         # Définition du query et préparation
         if ($keyword != '') {
             $keyword = str_replace("%", "\%", $keyword);
-            $query = "SELECT * FROM livres WHERE titre LIKE :keyword COLLATE utf8_bin ORDER BY no DESC ";
+            $query = "SELECT * FROM public.livres WHERE titre LIKE :keyword COLLATE utf8_bin ORDER BY no DESC ";
             $ps = $this->_db->prepare($query);
             # Le bindValue se charge de quoter proprement les valeurs des variables sql
             $ps->bindValue(':keyword',"%$keyword%");
@@ -61,7 +61,7 @@ class Db
 
     public function insert_livre($titre,$auteur) {
         # Solution d'INSERT avec prepared statement
-        $query = 'INSERT INTO livres (titre, auteur) values (:titre,:auteur)';
+        $query = 'INSERT INTO public.livres (titre, auteur) values (:titre,:auteur)';
         $ps = $this->_db->prepare($query);
         $ps->bindValue(':titre',$titre);
         $ps->bindValue(':auteur',$auteur);
